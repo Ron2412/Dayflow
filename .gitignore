@@ -54,3 +54,8 @@ coverage/
 .cache/
 .parcel-cache/
 .turbo/
+
+# AI Agent
+.gemini/
+.agent/
+.cursor/

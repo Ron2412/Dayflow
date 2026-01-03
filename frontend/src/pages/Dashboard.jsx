@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { EMPLOYEES, MOCK_ATTENDANCE, MOCK_LEAVES } from '../lib/mockData';
-import { SearchSlash, Plane, Circle, MoreHorizontal, Mail, Phone, MapPin, X, Calendar } from 'lucide-react';
+import { SearchSlash, Plane, Circle, MoreHorizontal, Mail, Phone, MapPin, X, Calendar, User, Clock, Award, ArrowUpRight, Users } from 'lucide-react';
 
 const EmployeeCard = ({ employee, indicatorStatus, onClick }) => (
   <div
@@ -144,18 +144,126 @@ const EmployeeProfileModal = ({ employee, onClose }) => {
 };
 
 const Dashboard = () => {
+  const { profile } = useAuth();
   const [selectedEmployee, setSelectedEmployee] = useState(null);
+  const isAdmin = profile?.role === 'hr';
 
-  return (
-    <div className="space-y-8 pb-12">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-black text-slate-900 tracking-tight">Staff Directory</h1>
-          <p className="text-slate-500 font-bold">Manage and view your team in one place.</p>
+  const StaffDashboard = () => (
+    <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div>
+        <h1 className="text-3xl font-black text-slate-900 tracking-tight">Welcome back, {profile?.full_name?.split(' ')[0]}!</h1>
+        <p className="text-slate-500 font-bold italic">Here's a quick look at your workspace today.</p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <QuickCard
+          label="My Profile"
+          sub="View & Edit Details"
+          icon={<User size={24} className="text-blue-600" />}
+          path="/profile"
+          color="bg-blue-50 border-blue-100"
+        />
+        <QuickCard
+          label="Attendance"
+          sub="History & Tracking"
+          icon={<Clock size={24} className="text-emerald-600" />}
+          path="/attendance"
+          color="bg-emerald-50 border-emerald-100"
+        />
+        <QuickCard
+          label="Time Off"
+          sub="Requests & Balance"
+          icon={<Calendar size={24} className="text-rose-600" />}
+          path="/leaves"
+          color="bg-rose-50 border-rose-100"
+        />
+        <QuickCard
+          label="Log Out"
+          sub="End Session"
+          icon={<Power size={24} className="text-slate-600" />}
+          path="/login"
+          color="bg-slate-100 border-slate-200"
+          isLogout
+        />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+        <div className="lg:col-span-8 space-y-6">
+          <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest px-1">Recent Activity</h3>
+          <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm p-8 space-y-6">
+            <ActivityItem
+              icon={<CheckCircle2 size={16} className="text-emerald-500" />}
+              text="Attendance verified for Oct 22"
+              time="2 hours ago"
+            />
+            <ActivityItem
+              icon={<Clock size={16} className="text-blue-500" />}
+              text="Checked in at 09:00 AM"
+              time="4 hours ago"
+            />
+            <ActivityItem
+              icon={<Award size={16} className="text-amber-500" />}
+              text="New Skill 'React Architecture' added to profile"
+              time="3 hours ago"
+            />
+            <ActivityItem
+              icon={<Plane size={16} className="text-rose-500" />}
+              text="Leave request 'Sick Leave' pending approval"
+              time="Yesterday"
+            />
+            <ActivityItem
+              icon={<User size={16} className="text-purple-500" />}
+              text="Profile information updated"
+              time="Oct 20, 2025"
+            />
+          </div>
         </div>
-        <button className="px-6 py-2.5 bg-[#714B67] text-white rounded-xl font-black text-xs uppercase tracking-widest shadow-lg shadow-purple-100 hover:bg-[#5a3c52] transition-all">
-          + New Employee
-        </button>
+
+        <div className="lg:col-span-4 space-y-6">
+          <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest px-1">Announcements</h3>
+          <div className="bg-[#714B67] text-white rounded-[2.5rem] p-8 shadow-xl shadow-[#714B67]/20 relative overflow-hidden">
+            <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-3xl"></div>
+            <p className="text-xs font-black uppercase tracking-widest text-[#d5c3d0] mb-2">Company Update</p>
+            <h4 className="text-lg font-bold leading-tight mb-4">New Holiday Policy updated for 2026.</h4>
+            <button className="text-[10px] font-black uppercase tracking-widest underline decoration-2 underline-offset-4 hover:text-[#d5c3d0] transition-colors">Read More</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const AdminDashboard = () => (
+    <div className="space-y-8 animate-in fade-in duration-500">
+      <div className="bg-gradient-to-br from-[#714B67] to-[#5a3c52] p-8 rounded-[2.5rem] text-white shadow-2xl shadow-[#714B67]/20 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -mr-20 -mt-20"></div>
+        <div className="relative z-10">
+          <h2 className="text-3xl font-black mb-2 tracking-tight">Admin Console</h2>
+          <p className="text-white/70 font-bold max-w-md">Manage your team, track attendance, and oversee time-off requests.</p>
+        </div>
+        <div className="mt-8 flex gap-4">
+          <div className="bg-white/10 backdrop-blur-md px-6 py-3 rounded-2xl border border-white/10 flex items-center gap-3 group hover:bg-white/20 transition-all cursor-pointer">
+            <div className="w-10 h-10 bg-amber-400 rounded-xl flex items-center justify-center text-white shadow-lg shadow-amber-400/20">
+              <Plane size={20} />
+            </div>
+            <div>
+              <p className="text-[10px] font-black uppercase text-white/50">Alert</p>
+              <p className="text-sm font-black">2 Pending Approvals</p>
+            </div>
+            <ArrowUpRight size={16} className="text-white/30 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+          </div>
+        </div>
+      </div>
+
+      <div className="flex items-center justify-between">
+        <h3 className="text-xl font-black text-slate-800 tracking-tight">Staff Directory</h3>
+        <div className="flex gap-2">
+          <div className="bg-white px-4 py-2 rounded-xl shadow-sm border border-slate-100 text-xs font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
+            <Users size={14} /> Total: {EMPLOYEES.length}
+          </div>
+          <Link to="/admin/add-employee" className="px-6 py-2.5 bg-[#714B67] text-white rounded-xl font-black text-xs uppercase tracking-widest shadow-lg shadow-purple-100 hover:bg-[#5a3c52] transition-all">
+            + New Employee
+          </Link>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-8">
@@ -177,6 +285,12 @@ const Dashboard = () => {
           );
         })}
       </div>
+    </div>
+  );
+
+  return (
+    <div className="pb-12">
+      {isAdmin ? <AdminDashboard /> : <StaffDashboard />}
 
       <EmployeeProfileModal
         employee={selectedEmployee}
@@ -185,5 +299,46 @@ const Dashboard = () => {
     </div>
   );
 };
+
+// Sub-components
+import { Power, CheckCircle2 } from 'lucide-react';
+import { useNavigate, Link } from 'react-router-dom';
+
+const QuickCard = ({ label, sub, icon, path, color, isLogout }) => {
+  const navigate = useNavigate();
+  const { signOut } = useAuth();
+
+  const handleClick = () => {
+    if (isLogout) signOut();
+    navigate(path);
+  };
+
+  return (
+    <button
+      onClick={handleClick}
+      className={`p-6 rounded-[2.5rem] border ${color} shadow-sm group hover:shadow-md hover:scale-[1.02] transition-all text-left flex flex-col gap-4`}
+    >
+      <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-sm group-hover:rotate-6 transition-transform">
+        {icon}
+      </div>
+      <div>
+        <h3 className="font-black text-slate-900 tracking-tight">{label}</h3>
+        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{sub}</p>
+      </div>
+    </button>
+  );
+};
+
+const ActivityItem = ({ icon, text, time }) => (
+  <div className="flex items-center justify-between group">
+    <div className="flex items-center gap-4">
+      <div className="w-10 h-10 bg-slate-50 border border-slate-100 rounded-xl flex items-center justify-center group-hover:bg-white transition-colors">
+        {icon}
+      </div>
+      <span className="text-sm font-bold text-slate-700">{text}</span>
+    </div>
+    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{time}</span>
+  </div>
+);
 
 export default Dashboard;

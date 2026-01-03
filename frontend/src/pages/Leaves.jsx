@@ -35,12 +35,15 @@ const Leaves = () => {
         ? ['Overview', 'My Time Off', 'To Approve']
         : ['Overview', 'My Time Off'];
 
-    const handleApprove = (id) => {
-        setAllRequests(allRequests.map(r => r.id === id ? { ...r, status: 'Approved' } : r));
+    const handleApprove = (id, comment) => {
+        setAllRequests(allRequests.map(r => r.id === id ? { ...r, status: 'Approved', admin_comment: comment } : r));
+        // If it's the current user's request (rare but possible in mock), update myRequests too
+        setMyRequests(myRequests.map(r => r.id === id ? { ...r, status: 'Approved', admin_comment: comment } : r));
     };
 
-    const handleRefuse = (id) => {
-        setAllRequests(allRequests.map(r => r.id === id ? { ...r, status: 'Refused' } : r));
+    const handleRefuse = (id, comment) => {
+        setAllRequests(allRequests.map(r => r.id === id ? { ...r, status: 'Refused', admin_comment: comment } : r));
+        setMyRequests(myRequests.map(r => r.id === id ? { ...r, status: 'Refused', admin_comment: comment } : r));
     };
 
     return (
@@ -53,8 +56,8 @@ const Leaves = () => {
                             key={tab}
                             onClick={() => setSelectedTab(tab)}
                             className={`px-6 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${selectedTab === tab
-                                    ? 'bg-white text-[#714B67] shadow-sm'
-                                    : 'text-slate-400 hover:text-slate-600'
+                                ? 'bg-white text-[#714B67] shadow-sm'
+                                : 'text-slate-400 hover:text-slate-600'
                                 }`}
                         >
                             {tab}
@@ -130,16 +133,21 @@ const MyTimeOffView = ({ requests }) => (
                 </tr>
             </thead>
             <tbody className="divide-y divide-slate-50 font-bold">
-                {requests.map((req) => (
+                {requests.map(req => (
                     <tr key={req.id} className="hover:bg-slate-50/50 transition-colors">
-                        <td className="px-8 py-4 text-slate-800">{req.type}</td>
+                        <td className="px-8 py-4">
+                            <div className="flex flex-col">
+                                <span className="text-slate-800">{req.type}</span>
+                                {req.admin_comment && <span className="text-[10px] text-[#714B67] font-black italic">HR: {req.admin_comment}</span>}
+                            </div>
+                        </td>
                         <td className="px-6 py-4 text-slate-600">{req.start}</td>
                         <td className="px-6 py-4 text-slate-600">{req.end}</td>
                         <td className="px-6 py-4 text-slate-700">{req.days} Days</td>
                         <td className="px-6 py-4">
                             <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${req.status === 'Approved' ? 'bg-emerald-100 text-emerald-600' :
-                                    req.status === 'Refused' ? 'bg-rose-100 text-rose-600' :
-                                        'bg-amber-100 text-amber-600'
+                                req.status === 'Refused' ? 'bg-rose-100 text-rose-600' :
+                                    'bg-amber-100 text-amber-600'
                                 }`}>
                                 {req.status}
                             </span>
@@ -166,50 +174,96 @@ const ApprovalsView = ({ requests, onApprove, onRefuse }) => (
 
         <div className="grid grid-cols-1 gap-4">
             {requests.map((req) => (
-                <div key={req.id} className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm flex items-center justify-between group hover:border-[#714B67]/20 transition-all">
-                    <div className="flex items-center gap-6">
-                        <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-[#714B67] font-black">
-                            {req.employee[0]}
-                        </div>
-                        <div>
-                            <h4 className="font-black text-slate-900">{req.employee}</h4>
-                            <p className="text-xs font-bold text-slate-400">{req.type} • {req.days} Days</p>
-                        </div>
-                        <div className="h-10 w-px bg-slate-100 mx-2"></div>
-                        <div className="flex flex-col">
-                            <span className="text-[10px] font-black text-slate-400 uppercase">Period</span>
-                            <span className="text-sm font-black text-slate-700">{req.start} to {req.end}</span>
-                        </div>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                        {req.status === 'To Approve' ? (
-                            <>
-                                <button
-                                    onClick={() => onApprove(req.id)}
-                                    className="p-3 bg-emerald-50 text-emerald-600 rounded-2xl hover:bg-emerald-600 hover:text-white transition-all shadow-sm"
-                                >
-                                    <CheckCircle2 size={20} />
-                                </button>
-                                <button
-                                    onClick={() => onRefuse(req.id)}
-                                    className="p-3 bg-rose-50 text-rose-600 rounded-2xl hover:bg-rose-600 hover:text-white transition-all shadow-sm"
-                                >
-                                    <XCircle size={20} />
-                                </button>
-                            </>
-                        ) : (
-                            <span className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest ${req.status === 'Approved' ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-100 text-rose-600'
-                                }`}>
-                                {req.status}
-                            </span>
-                        )}
-                    </div>
-                </div>
+                <ApprovalCard
+                    key={req.id}
+                    req={req}
+                    onApprove={onApprove}
+                    onRefuse={onRefuse}
+                />
             ))}
         </div>
     </div>
 );
+
+const ApprovalCard = ({ req, onApprove, onRefuse }) => {
+    const [comment, setComment] = useState('');
+    const [showCommentInput, setShowCommentInput] = useState(false);
+
+    return (
+        <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm flex flex-col gap-4 group hover:border-[#714B67]/20 transition-all">
+            <div className="flex items-center justify-between">
+                <div className="flex items-center gap-6">
+                    <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-[#714B67] font-black">
+                        {req.employee[0]}
+                    </div>
+                    <div>
+                        <h4 className="font-black text-slate-900">{req.employee}</h4>
+                        <p className="text-xs font-bold text-slate-400">{req.type} • {req.days} Days</p>
+                    </div>
+                    <div className="h-10 w-px bg-slate-100 mx-2 hidden md:block"></div>
+                    <div className="flex flex-col hidden md:flex">
+                        <span className="text-[10px] font-black text-slate-400 uppercase">Period</span>
+                        <span className="text-sm font-black text-slate-700">{req.start} to {req.end}</span>
+                    </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                    {req.status === 'To Approve' ? (
+                        <>
+                            {!showCommentInput ? (
+                                <button
+                                    onClick={() => setShowCommentInput(true)}
+                                    className="px-4 py-2 bg-slate-50 text-slate-400 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-100 transition-all"
+                                >
+                                    Add Comment
+                                </button>
+                            ) : (
+                                <button
+                                    onClick={() => setShowCommentInput(false)}
+                                    className="px-4 py-2 text-slate-400 text-[10px] font-black uppercase tracking-widest"
+                                >
+                                    Cancel
+                                </button>
+                            )}
+                            <button
+                                onClick={() => onApprove(req.id, comment)}
+                                className="p-3 bg-emerald-50 text-emerald-600 rounded-2xl hover:bg-emerald-600 hover:text-white transition-all shadow-sm"
+                            >
+                                <CheckCircle2 size={20} />
+                            </button>
+                            <button
+                                onClick={() => onRefuse(req.id, comment)}
+                                className="p-3 bg-rose-50 text-rose-600 rounded-2xl hover:bg-rose-600 hover:text-white transition-all shadow-sm"
+                            >
+                                <XCircle size={20} />
+                            </button>
+                        </>
+                    ) : (
+                        <div className="flex flex-col items-end gap-1">
+                            <span className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest ${req.status === 'Approved' ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-100 text-rose-600'}`}>
+                                {req.status}
+                            </span>
+                            {req.admin_comment && <span className="text-[10px] text-slate-400 font-bold italic">"{req.admin_comment}"</span>}
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {showCommentInput && req.status === 'To Approve' && (
+                <div className="animate-in slide-in-from-top-2 duration-200">
+                    <input
+                        type="text"
+                        placeholder="Type a feedback comment (optional)..."
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-xs font-bold outline-none focus:ring-2 focus:ring-[#714B67]/10"
+                        value={comment}
+                        onChange={(e) => setComment(e.target.value)}
+                        autoFocus
+                    />
+                </div>
+            )}
+        </div>
+    );
+};
 
 const RequestModal = ({ onClose, onSubmit }) => {
     const [formData, setFormData] = useState({

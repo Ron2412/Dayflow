@@ -12,9 +12,12 @@ const Signup = () => {
     const [phone, setPhone] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+    const [role, setRole] = useState('employee');
+    const [employeeId, setEmployeeId] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState(false);
+    const [showVerification, setShowVerification] = useState(false);
 
     const fileInputRef = useRef(null);
     const navigate = useNavigate();
@@ -34,44 +37,78 @@ const Signup = () => {
         e.preventDefault();
         setError('');
 
+        // SRS Password Rules
+        const passwordRegex = /^(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{8,}$/;
+        if (!passwordRegex.test(password)) {
+            setError('Password must be at least 8 characters, include a number and a special character.');
+            return;
+        }
+
         if (password !== confirmPassword) {
             setError('Passwords do not match');
             return;
         }
 
-        if (password.length < 6) {
-            setError('Password must be at least 6 characters');
-            return;
-        }
-
         setLoading(true);
 
-        // Simulation: Save company and HR admin to localStorage
+        // Simulation: Save company and user to localStorage
         setTimeout(() => {
             const dynamicUsers = JSON.parse(localStorage.getItem('dayflow_dynamic_users') || '[]');
-            const newHr = {
-                id: `hr-${Date.now()}`,
+
+            const generatedId = `OI${fullName.substring(0, 2).toUpperCase()}${companyName.substring(0, 2).toUpperCase()}${new Date().getFullYear()}${String(dynamicUsers.length + 1).padStart(3, '0')}`;
+
+            const newUser = {
+                id: `${role}-${Date.now()}`,
                 email,
                 password,
                 full_name: fullName,
                 phone,
                 company_name: companyName,
-                role: 'hr',
-                employee_id: `OI${fullName.substring(0, 2).toUpperCase()}${companyName.substring(0, 2).toUpperCase()}${new Date().getFullYear()}001`,
+                role: role,
+                employee_id: employeeId || generatedId,
                 logo: logoPreview,
-                created_at: new Date().toISOString()
+                created_at: new Date().toISOString(),
+                status: 'active',
+                department: role === 'hr' ? 'HR' : 'Engineering',
+                designation: role === 'hr' ? 'HR Manager' : 'Staff Member'
             };
 
-            dynamicUsers.push(newHr);
+            dynamicUsers.push(newUser);
             localStorage.setItem('dayflow_dynamic_users', JSON.stringify(dynamicUsers));
 
-            setSuccess(true);
             setLoading(false);
+            setShowVerification(true); // Show simulated email verification
 
-            // Auto-redirect after 2 seconds
-            setTimeout(() => navigate('/login'), 2000);
+            // Auto-complete verification after 3 seconds
+            setTimeout(() => {
+                setShowVerification(false);
+                setSuccess(true);
+                // Auto-redirect after 2 seconds
+                setTimeout(() => navigate('/login'), 2000);
+            }, 3000);
         }, 1500);
     };
+
+    if (showVerification) {
+        return (
+            <div className="min-h-screen gradient-bg flex items-center justify-center p-6 bg-[#f8fafc]">
+                <div className="max-w-md w-full bg-white rounded-[2.5rem] shadow-xl p-10 text-center border border-slate-100 animate-in zoom-in-95 duration-300">
+                    <div className="w-20 h-20 bg-blue-100 text-blue-600 rounded-3xl flex items-center justify-center mx-auto mb-6 animate-bounce">
+                        <Mail size={40} />
+                    </div>
+                    <h2 className="text-3xl font-black text-slate-900 mb-4">Verify Email</h2>
+                    <p className="text-slate-500 font-medium mb-8 italic">We've sent a code to <span className="text-slate-900 font-bold">{email}</span>. Verifying your inbox...</p>
+                    <div className="flex justify-center gap-2">
+                        {[1, 2, 3, 4].map(i => (
+                            <div key={i} className="w-12 h-14 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-center text-xl font-black text-slate-300">
+                                {i < 3 ? '•' : ''}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     if (success) {
         return (
@@ -186,6 +223,36 @@ const Signup = () => {
                                     </div>
                                 </div>
 
+                                <div className="space-y-2">
+                                    <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">Account Role</label>
+                                    <div className="flex bg-slate-100 p-1 rounded-2xl">
+                                        <button
+                                            type="button"
+                                            onClick={() => setRole('employee')}
+                                            className={`flex-1 py-2 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all ${role === 'employee' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400'}`}
+                                        >
+                                            Employee
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setRole('hr')}
+                                            className={`flex-1 py-2 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all ${role === 'hr' ? 'bg-white text-[#714B67] shadow-sm' : 'text-slate-400'}`}
+                                        >
+                                            HR Admin
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">Employee ID (Optional)</label>
+                                    <input
+                                        type="text"
+                                        className="w-full px-5 py-3 bg-slate-100/50 border border-transparent rounded-2xl focus:bg-white focus:border-blue-600 outline-none transition-all font-bold text-slate-900"
+                                        placeholder="Auto-generated if empty"
+                                        value={employeeId} onChange={(e) => setEmployeeId(e.target.value)}
+                                    />
+                                </div>
+
                                 <div className="space-y-2 md:col-span-2">
                                     <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">Phone Number</label>
                                     <div className="relative group">
@@ -210,6 +277,7 @@ const Signup = () => {
                                             value={password} onChange={(e) => setPassword(e.target.value)}
                                         />
                                     </div>
+                                    <p className="text-[9px] font-bold text-slate-400 px-1">Min 8 chars, 1 number, 1 special char.</p>
                                 </div>
 
                                 <div className="space-y-2">

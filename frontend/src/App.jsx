@@ -10,7 +10,11 @@ import ChangePassword from './pages/settings/ChangePassword';
 import Profile from './pages/Profile';
 import Attendance from './pages/Attendance';
 import Leaves from './pages/Leaves';
+import Settings from './pages/Settings';
+import Payroll from './pages/Payroll';
 import Layout from './components/Layout';
+import AdminAttendance from './pages/admin/AdminAttendance';
+import AdminPayroll from './pages/admin/AdminPayroll';
 
 function App() {
   return (
@@ -18,7 +22,7 @@ function App() {
       <Router>
         <Routes>
           <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} /> {/* Added Signup route */}
+          <Route path="/signup" element={<Signup />} />
 
           <Route element={<ProtectedRoute />}>
             <Route element={<Layout />}>
@@ -28,10 +32,15 @@ function App() {
 
               <Route path="/attendance" element={<Attendance />} />
               <Route path="/leaves" element={<Leaves />} />
-              <Route path="/payroll" element={<div>Payroll (Coming Soon)</div>} />
+              <Route path="/payroll" element={<Payroll />} />
+
+              {/* Admin Routes */}
+              <Route path="/admin/attendance" element={<ProtectedRoute allowedRoles={['hr']}><AdminAttendance /></ProtectedRoute>} />
+              <Route path="/admin/payroll" element={<ProtectedRoute allowedRoles={['hr']}><AdminPayroll /></ProtectedRoute>} />
+
               <Route path="/employees" element={<EmployeeDirectory />} />
               <Route path="/profile" element={<Profile />} />
-              <Route path="/settings" element={<div>Settings (Coming Soon)</div>} />
+              <Route path="/settings" element={<Settings />} />
               <Route path="/" element={<Navigate to="/dashboard" replace />} />
             </Route>
           </Route>

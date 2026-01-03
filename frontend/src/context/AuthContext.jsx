@@ -23,7 +23,7 @@ export const AuthProvider = ({ children }) => {
         } else if (email === 'employee@odooindia.com' || email === 'OIJODO2024001') {
             foundUser = { ...MOCK_USER };
         } else {
-            // 2. Check dynamic users created via "Add Employee"
+            // 2. Check dynamic users created via "Add Employee" or "Signup"
             const dynamicUsers = JSON.parse(localStorage.getItem('dayflow_dynamic_users') || '[]');
             foundUser = dynamicUsers.find(u => u.email === email || u.employee_id === email);
 

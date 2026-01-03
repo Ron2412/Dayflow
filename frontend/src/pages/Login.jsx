@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Clock, Mail, Lock, ArrowRight, Github, Loader2 } from 'lucide-react';
+import { Clock, Mail, Lock, ArrowRight, Github, Loader2, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const Login = () => {
@@ -84,10 +84,7 @@ const Login = () => {
             </div>
 
             <div className="space-y-2">
-              <div className="flex justify-between items-center ml-1">
-                <label className="text-sm font-bold text-slate-700">Password</label>
-                <a href="#" className="text-xs font-bold text-blue-600 hover:text-blue-700">Forgot?</a>
-              </div>
+              <label className="text-sm font-bold text-slate-700 ml-1">Password</label>
               <div className="relative group">
                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-600 transition-colors">
                   <Lock size={18} />
@@ -103,12 +100,32 @@ const Login = () => {
               </div>
             </div>
 
-            <button
-              type="submit" disabled={loading}
-              className="w-full py-4 bg-blue-600 text-white rounded-2xl font-bold shadow-xl shadow-blue-200 hover:bg-blue-700 active:scale-[0.98] transition-all flex items-center justify-center gap-2 group mt-4 h-14"
-            >
-              {loading ? <Loader2 className="animate-spin text-white" size={24} /> : <>Sign In <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" /></>}
-            </button>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between ml-1">
+                <label className="flex items-center gap-2 cursor-pointer group">
+                  <div className="relative">
+                    <input type="checkbox" className="peer sr-only" />
+                    <div className="w-5 h-5 border-2 border-slate-200 rounded group-hover:border-blue-400 peer-checked:bg-blue-600 peer-checked:border-blue-600 transition-all"></div>
+                    <CheckCircle2 size={12} className="absolute left-1 top-1 text-white opacity-0 peer-checked:opacity-100 transition-opacity" />
+                  </div>
+                  <span className="text-xs font-bold text-slate-500 group-hover:text-slate-700 transition-colors">Remember me</span>
+                </label>
+                <button
+                  type="button"
+                  onClick={() => alert("Password reset link sent to your work email (Simulated)")}
+                  className="text-xs font-bold text-blue-600 hover:text-blue-700"
+                >
+                  Forgot Password?
+                </button>
+              </div>
+
+              <button
+                type="submit" disabled={loading}
+                className="w-full py-4 bg-blue-600 text-white rounded-2xl font-bold shadow-xl shadow-blue-200 hover:bg-blue-700 active:scale-[0.98] transition-all flex items-center justify-center gap-2 group h-14"
+              >
+                {loading ? <Loader2 className="animate-spin text-white" size={24} /> : <>Sign In <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" /></>}
+              </button>
+            </div>
           </form>
 
           <div className="mt-8">

@@ -11,6 +11,7 @@ import {
   ChevronDown,
   User,
   Power,
+  Settings as SettingsIcon,
   CheckCircle2,
   XCircle
 } from 'lucide-react';
@@ -123,12 +124,9 @@ const Layout = () => {
                         navigate('/profile');
                         setShowProfileMenu(false);
                       }}
-                      className="w-full flex items-center gap-3 px-4 py-2 text-sm font-bold text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition-colors"
+                      className="w-full flex items-center gap-3 px-4 py-2 text-sm font-bold text-slate-600 hover:bg-slate-50 hover:text-[#714B67] transition-colors"
                     >
                       <User size={18} /> My Profile
-                    </button>
-                    <button onClick={() => navigate('/settings/password')} className="w-full flex items-center gap-3 px-4 py-2 text-sm font-bold text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition-colors">
-                      <Clock size={18} /> Attendance History
                     </button>
                     <div className="h-px bg-slate-100 my-2 mx-4"></div>
                     <button
