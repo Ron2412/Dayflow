@@ -5,7 +5,11 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Dashboard from './pages/Dashboard';
 import AddEmployee from './pages/admin/AddEmployee';
+import EmployeeDirectory from './pages/admin/EmployeeDirectory';
 import ChangePassword from './pages/settings/ChangePassword';
+import Profile from './pages/Profile';
+import Attendance from './pages/Attendance';
+import Leaves from './pages/Leaves';
 import Layout from './components/Layout';
 
 function App() {
@@ -22,10 +26,11 @@ function App() {
               <Route path="/admin/add-employee" element={<ProtectedRoute allowedRoles={['hr']}><AddEmployee /></ProtectedRoute>} />
               <Route path="/settings/password" element={<ChangePassword />} />
 
-              <Route path="/attendance" element={<div>Attendance (Coming Soon)</div>} />
-              <Route path="/leaves" element={<div>Leaves (Coming Soon)</div>} />
+              <Route path="/attendance" element={<Attendance />} />
+              <Route path="/leaves" element={<Leaves />} />
               <Route path="/payroll" element={<div>Payroll (Coming Soon)</div>} />
-              <Route path="/employees" element={<div>Employees (Coming Soon)</div>} />
+              <Route path="/employees" element={<EmployeeDirectory />} />
+              <Route path="/profile" element={<Profile />} />
               <Route path="/settings" element={<div>Settings (Coming Soon)</div>} />
               <Route path="/" element={<Navigate to="/dashboard" replace />} />
             </Route>
